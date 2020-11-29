@@ -17,17 +17,9 @@ namespace VeeamTestAssignmentGzip
         public void WriteGzippedChunk(byte[] gzippedChunk, Int32 origLen)
         {
             int packedLen = gzippedChunk.Length;
-            Int32ByteCoder codedPackedLen = packedLen;
-            this.stream.WriteByte(codedPackedLen.Byte1);
-            this.stream.WriteByte(codedPackedLen.Byte2);
-            this.stream.WriteByte(codedPackedLen.Byte3);
-            this.stream.WriteByte(codedPackedLen.Byte4);
-
-            Int32ByteCoder codedOrigLen = origLen;
-            this.stream.WriteByte(codedOrigLen.Byte1);
-            this.stream.WriteByte(codedOrigLen.Byte2);
-            this.stream.WriteByte(codedOrigLen.Byte3);
-            this.stream.WriteByte(codedOrigLen.Byte4);
+            BinaryWriter binaryWriter = new BinaryWriter(this.stream);
+            binaryWriter.Write((Int32)packedLen);
+            binaryWriter.Write(origLen);
 
             this.stream.Write(gzippedChunk, 0, packedLen);
         }
