@@ -67,7 +67,7 @@ namespace VeeamTestAssignmentGzip
             Console.WriteLine("Usage:\n");
             Console.WriteLine($"{exeName} compress <input> <output>");
             Console.WriteLine($"{exeName} decompress <input> <output>");
-            Console.WriteLine("\n");
+            Console.WriteLine("");
             Console.WriteLine("    <input>\tPath to an input file.");
             Console.WriteLine("    <output>\tPath to an output file.");
         }
