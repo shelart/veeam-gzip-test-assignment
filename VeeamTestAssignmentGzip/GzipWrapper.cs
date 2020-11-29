@@ -20,15 +20,8 @@ namespace VeeamTestAssignmentGzip
             }
         }
 
-        // This method handles quite complicated case of BLOCK_SIZE (aka interimBlockSize)
-        // has been decreased since compressing. It might result in unpacked block size larger
-        // than current BLOCK_SIZE, and this is why this method contains the logic of merging
-        // unpacked blocks.
-        public static byte[] DecompressBlock(byte[] gzippedBlock, int interimBlockSize)
+        public static byte[] DecompressBlock(byte[] gzippedBlock, int expectedLength)
         {
-            List<byte[]> listOfUnpackedBlocks = new List<byte[]>();
-            int totalUnpackedLen = 0;
-
             using (MemoryStream packedMemoryStream = new MemoryStream())
             {
                 packedMemoryStream.Write(gzippedBlock, 0, gzippedBlock.Length);
@@ -36,41 +29,19 @@ namespace VeeamTestAssignmentGzip
                 packedMemoryStream.Seek(0, SeekOrigin.Begin);
                 using (GZipStream decompressionStream = new GZipStream(packedMemoryStream, CompressionMode.Decompress))
                 {
-                    int unpackedBlockLen;
-                    do
+                    byte[] unpackedBlock = new byte[expectedLength];
+                    int unpackedBlockLen = decompressionStream.Read(unpackedBlock, 0, expectedLength);
+
+                    if (unpackedBlockLen < expectedLength)
                     {
-                        byte[] unpackedBlock = new byte[interimBlockSize];
-                        unpackedBlockLen = decompressionStream.Read(unpackedBlock, 0, interimBlockSize);
-                        if (unpackedBlockLen == 0)
-                        {
-                            // It was end of the partial stream.
-                            break;
-                        }
+                        byte[] shrunkBlock = new byte[unpackedBlockLen];
+                        Buffer.BlockCopy(unpackedBlock, 0, shrunkBlock, 0, unpackedBlockLen);
+                        unpackedBlock = shrunkBlock;
+                    }
 
-                        if (unpackedBlockLen < interimBlockSize)
-                        {
-                            byte[] shrunkBlock = new byte[unpackedBlockLen];
-                            Buffer.BlockCopy(unpackedBlock, 0, shrunkBlock, 0, unpackedBlockLen);
-                            unpackedBlock = shrunkBlock;
-                        }
-
-                        listOfUnpackedBlocks.Add(unpackedBlock);
-                        totalUnpackedLen += unpackedBlockLen;
-                    } while (unpackedBlockLen != 0);
+                    return unpackedBlock;
                 }
             }
-
-            // Merge unpacked blocks into the single one
-            // (for the complicated case of decreased BLOCK_SIZE since compressing).
-            byte[] result = new byte[totalUnpackedLen];
-            int copiedSoFar = 0;
-            foreach (byte[] unpackedBlock in listOfUnpackedBlocks)
-            {
-                Buffer.BlockCopy(unpackedBlock, 0, result, copiedSoFar, unpackedBlock.Length);
-                copiedSoFar += unpackedBlock.Length;
-            }
-
-            return result;
         }
     }
 }

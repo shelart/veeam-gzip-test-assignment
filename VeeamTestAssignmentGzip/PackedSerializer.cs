@@ -14,16 +14,22 @@ namespace VeeamTestAssignmentGzip
             this.stream = File.Create(fileName);
         }
 
-        public void WriteGzippedChunk(byte[] gzippedChunk)
+        public void WriteGzippedChunk(byte[] gzippedChunk, Int32 origLen)
         {
-            int len = gzippedChunk.Length;
-            Int32ByteCoder codedLen = len;
-            this.stream.WriteByte(codedLen.Byte1);
-            this.stream.WriteByte(codedLen.Byte2);
-            this.stream.WriteByte(codedLen.Byte3);
-            this.stream.WriteByte(codedLen.Byte4);
+            int packedLen = gzippedChunk.Length;
+            Int32ByteCoder codedPackedLen = packedLen;
+            this.stream.WriteByte(codedPackedLen.Byte1);
+            this.stream.WriteByte(codedPackedLen.Byte2);
+            this.stream.WriteByte(codedPackedLen.Byte3);
+            this.stream.WriteByte(codedPackedLen.Byte4);
 
-            this.stream.Write(gzippedChunk, 0, len);
+            Int32ByteCoder codedOrigLen = origLen;
+            this.stream.WriteByte(codedOrigLen.Byte1);
+            this.stream.WriteByte(codedOrigLen.Byte2);
+            this.stream.WriteByte(codedOrigLen.Byte3);
+            this.stream.WriteByte(codedOrigLen.Byte4);
+
+            this.stream.Write(gzippedChunk, 0, packedLen);
         }
 
         public void Dispose() => Dispose(true);

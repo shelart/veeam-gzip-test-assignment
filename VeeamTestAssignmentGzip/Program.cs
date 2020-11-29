@@ -25,7 +25,7 @@ namespace VeeamTestAssignmentGzip
                             {
                                 byte[] origChunk = fileReader.ReadNextBlock(BLOCK_SIZE);
                                 byte[] gzippedChunk = GzipWrapper.CompressBlock(origChunk);
-                                fileWriter.WriteGzippedChunk(gzippedChunk);
+                                fileWriter.WriteGzippedChunk(gzippedChunk, origChunk.Length);
                             }
                         }
                     }
@@ -38,8 +38,8 @@ namespace VeeamTestAssignmentGzip
                         {
                             while (fileReader.IsNextBlockAvailable())
                             {
-                                byte[] packedChunk = fileReader.ReadNextPackedChunk();
-                                byte[] unpackedChunk = GzipWrapper.DecompressBlock(packedChunk, BLOCK_SIZE);
+                                byte[] packedChunk = fileReader.ReadNextPackedChunk(out int origLength);
+                                byte[] unpackedChunk = GzipWrapper.DecompressBlock(packedChunk, origLength);
                                 fileWriter.Write(unpackedChunk, 0, unpackedChunk.Length);
                             }
                             fileWriter.Flush();

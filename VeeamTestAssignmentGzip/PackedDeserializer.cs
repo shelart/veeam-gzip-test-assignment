@@ -19,13 +19,20 @@ namespace VeeamTestAssignmentGzip
             return (this.stream.Position < this.stream.Length);
         }
 
-        public byte[] ReadNextPackedChunk()
+        public byte[] ReadNextPackedChunk(out int origLen)
         {
             byte byte1 = readByte();
             byte byte2 = readByte();
             byte byte3 = readByte();
             byte byte4 = readByte();
             Int32ByteCoder chunkSize = new Int32ByteCoder(byte1, byte2, byte3, byte4);
+
+            byte byte5 = readByte();
+            byte byte6 = readByte();
+            byte byte7 = readByte();
+            byte byte8 = readByte();
+            Int32ByteCoder origSize = new Int32ByteCoder(byte5, byte6, byte7, byte8);
+            origLen = origSize;
 
             byte[] chunk = new byte[chunkSize];
             this.stream.Read(chunk, 0, chunkSize);
