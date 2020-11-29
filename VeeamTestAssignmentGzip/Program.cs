@@ -8,7 +8,7 @@ namespace VeeamTestAssignmentGzip
     {
         private static Int32 BLOCK_SIZE = 1024 * 1024;
 
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             string command      = args[0];
             string origFileName = args[1];
@@ -50,8 +50,10 @@ namespace VeeamTestAssignmentGzip
                 default:
                     Console.WriteLine($"Unknown command: {command}!");
                     PrintUsage("GZipTest.exe");
-                    break;
+                    return 1;
             }
+
+            return 0;
         }
 
         static void PrintUsage(string exeName)
