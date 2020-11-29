@@ -10,6 +10,12 @@ namespace VeeamTestAssignmentGzip
 
         static int Main(string[] args)
         {
+            if (args.Length != 3)
+            {
+                PrintUsage("GZipTest.exe");
+                return 1;
+            }
+
             string command      = args[0];
             string origFileName = args[1];
             string resFileName  = args[2];
