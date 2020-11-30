@@ -19,6 +19,11 @@ namespace VeeamTestAssignmentGzip
             return (this.stream.Position < this.stream.Length);
         }
 
+        public void SeekToBlock(long blockNum, int blockSize)
+        {
+            this.stream.Seek(blockNum * blockSize, SeekOrigin.Begin);
+        }
+
         public byte[] ReadNextBlock(int blockSize)
         {
             byte[] chunk = new byte[blockSize];
