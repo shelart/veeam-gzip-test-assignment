@@ -16,6 +16,11 @@ namespace VeeamTestAssignmentGzip
             Int32 origSize = binaryReader.ReadInt32();
             origLen = origSize;
 
+            if ((chunkSize < 0) || (origSize < 0))
+            {
+                throw new InvalidDataException("Met negative block size.");
+            }
+
             byte[] chunk = new byte[chunkSize];
             this.stream.Read(chunk, 0, chunkSize);
 
