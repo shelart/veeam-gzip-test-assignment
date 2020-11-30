@@ -9,6 +9,7 @@ namespace VeeamTestAssignmentGzip
         public string ResFileName { get; private set; }
         public Int32 BlockSize { get; private set; }
         public int NumOfThreads { get; private set; }
+        public bool IsVerbose { get; private set; }
 
         public ArgumentsCaptor(string[] args)
         {
@@ -37,8 +38,12 @@ namespace VeeamTestAssignmentGzip
                         NumOfThreads = readNextInt(args, ref i);
                         break;
 
+                    case "/verbose":
+                        IsVerbose = true;
+                        break;
+
                     default:
-                        throw new ArgumentException($"Unknown argument: {args[i]}!");
+                        throw new ArgumentException($"Unknown argument: {args[i]}");
                 }
             }
         }

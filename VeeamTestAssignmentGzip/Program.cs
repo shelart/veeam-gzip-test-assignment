@@ -42,11 +42,20 @@ namespace VeeamTestAssignmentGzip
 
                             CompressingThread[] threadObjs = new CompressingThread[distributedBlocksByThreads.Length];
                             Thread[] threads = new Thread[distributedBlocksByThreads.Length];
-                            Console.WriteLine($"Blocks amount: {amountOfBlocks}");
-                            Console.WriteLine("Distributed by threads:");
+                            
+                            if (argumentsCaptor.IsVerbose)
+                            {
+                                Console.WriteLine($"Blocks amount: {amountOfBlocks}");
+                                Console.WriteLine("Distributed by threads:");
+                            }
+                            
                             for (int i = 0; i < distributedBlocksByThreads.Length; ++i)
                             {
-                                Console.WriteLine($"Thread {i}: " + string.Join(", ", distributedBlocksByThreads[i].ToArray()));
+                                if (argumentsCaptor.IsVerbose)
+                                {
+                                    Console.WriteLine($"Thread {i}: " + string.Join(", ", distributedBlocksByThreads[i].ToArray()));
+                                }
+
                                 threadObjs[i] = new CompressingThread(origFileName, distributedBlocksByThreads[i], argumentsCaptor.BlockSize);
                                 threads[i] = new Thread(new ThreadStart(threadObjs[i].Run));
                             }
@@ -68,27 +77,48 @@ namespace VeeamTestAssignmentGzip
                                     {
                                         if (threads[i].IsAlive)
                                         {
-                                            Console.WriteLine($"Thread {i} is alive...");
+                                            if (argumentsCaptor.IsVerbose)
+                                            {
+                                                Console.WriteLine($"Thread {i} is alive...");
+                                            }
                                             ++numOfRunningThreads;
                                         }
                                         else
                                         {
-                                            Console.WriteLine($"Thread {i} died.");
+                                            if (argumentsCaptor.IsVerbose)
+                                            {
+                                                Console.WriteLine($"Thread {i} died.");
+                                            }
                                             continue;
                                         }
 
-                                        Console.WriteLine($"Thread {i}: waiting...");
+                                        if (argumentsCaptor.IsVerbose)
+                                        {
+                                            Console.WriteLine($"Thread {i}: waiting...");
+                                        }
                                         threadObjs[i].WaitHandlerTowardsMainThread.WaitOne();
+                                        
                                         // According to the algorithm which distributed the work
                                         // we have a guarantee here that we can sequentially write gzipped chunks.
-                                        Console.WriteLine($"Thread {i}: gzipped.");
+                                        if (argumentsCaptor.IsVerbose)
+                                        {
+                                            Console.WriteLine($"Thread {i}: gzipped.");
+                                        }
                                         fileWriter.WriteGzippedChunk(threadObjs[i].GzippedChunk, threadObjs[i].OrigChunkLength);
+                                        
                                         // Let the thread to go on. We'll come to it again later when time comes.
-                                        Console.WriteLine($"Thread {i}: letting go.");
+                                        if (argumentsCaptor.IsVerbose)
+                                        {
+                                            Console.WriteLine($"Thread {i}: letting go.");
+                                        }
                                         threadObjs[i].WaitHandlerTowardsMainThread.Reset();
                                         threadObjs[i].WaitHandlerFromMainThread.Set();
                                     }
-                                    Console.WriteLine($"Alive threads: {numOfRunningThreads}");
+
+                                    if (argumentsCaptor.IsVerbose)
+                                    {
+                                        Console.WriteLine($"Alive threads: {numOfRunningThreads}");
+                                    }
                                 } while (numOfRunningThreads > 0);
                             }
                         }
@@ -152,7 +182,7 @@ namespace VeeamTestAssignmentGzip
         static void PrintUsage(string exeName)
         {
             Console.WriteLine("Usage:\n");
-            Console.WriteLine($"{exeName} compress <input> <output> /BlockSize <block> /MaxThreads <threads>");
+            Console.WriteLine($"{exeName} compress <input> <output> [/BlockSize <block>] [/MaxThreads <threads>] [/Verbose]");
             Console.WriteLine($"{exeName} decompress <input> <output>");
             Console.WriteLine("");
             Console.WriteLine("");
@@ -167,11 +197,13 @@ namespace VeeamTestAssignmentGzip
             Console.WriteLine("           \tNOTE: meaningless & ignored on decompressing (will be taken from the archive).");
             Console.WriteLine("");
             Console.WriteLine("    <threads>\tMaximum number of threads used on compressing.");
-            Console.WriteLine("             \tIf not set, will be chosen by number of logical cores of your machine.");
+            Console.WriteLine("             \tIf /MaxThreads not set, will be chosen by number of logical cores of your machine.");
             Console.WriteLine("             \t(For this machine it is " + WorkDistributor.GetDefaultNumberOfThreads() + ".)");
             Console.WriteLine("             \tNote: if number of blocks is less than this value, number of threads");
             Console.WriteLine("             \twill be the same as the number of blocks.");
             Console.WriteLine("             \tNOTE: meaningless & ignored on decompressing (decompression is single-threaded).");
+            Console.WriteLine("");
+            Console.WriteLine("    /Verbose\tTurns on logging of multi-threading work distribution and threads status.");
         }
     }
 }
