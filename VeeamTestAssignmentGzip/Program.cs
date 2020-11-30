@@ -8,28 +8,35 @@ namespace VeeamTestAssignmentGzip
 {
     class Program
     {
-        private static Int32 BLOCK_SIZE = 1024 * 1024;
-
         static int Main(string[] args)
         {
-            if (args.Length != 3)
+            ArgumentsCaptor argumentsCaptor;
+            try
             {
+                argumentsCaptor = new ArgumentsCaptor(args);
+            } catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine(ex.InnerException);
+                }
+                Console.WriteLine("");
                 PrintUsage("GZipTest.exe");
                 return 1;
             }
 
-            string command      = args[0];
-            string origFileName = args[1];
-            string resFileName  = args[2];
+            string command      = argumentsCaptor.Command;
+            string origFileName = argumentsCaptor.OrigFileName;
+            string resFileName  = argumentsCaptor.ResFileName;
 
             switch (command)
             {
                 case "compress":
                     {
                         FileInfo fileInfo = new FileInfo(origFileName);
-                        long amountOfBlocks = fileInfo.Length.DivideRoundUp(BLOCK_SIZE);
-                        int numOfThreads = WorkDistributor.GetDefaultNumberOfThreads();
-                        List<long>[] distributedBlocksByThreads = WorkDistributor.DistributeWork(amountOfBlocks, numOfThreads);
+                        long amountOfBlocks = fileInfo.Length.DivideRoundUp(argumentsCaptor.BlockSize);
+                        List<long>[] distributedBlocksByThreads = WorkDistributor.DistributeWork(amountOfBlocks, argumentsCaptor.NumOfThreads);
 
                         CompressingThread[] threadObjs = new CompressingThread[distributedBlocksByThreads.Length];
                         Thread[] threads = new Thread[distributedBlocksByThreads.Length];
@@ -38,7 +45,7 @@ namespace VeeamTestAssignmentGzip
                         for (int i = 0; i < distributedBlocksByThreads.Length; ++i)
                         {
                             Console.WriteLine($"Thread {i}: " + string.Join(", ", distributedBlocksByThreads[i].ToArray()));
-                            threadObjs[i] = new CompressingThread(origFileName, distributedBlocksByThreads[i], BLOCK_SIZE);
+                            threadObjs[i] = new CompressingThread(origFileName, distributedBlocksByThreads[i], argumentsCaptor.BlockSize);
                             threads[i] = new Thread(new ThreadStart(threadObjs[i].Run));
                         }
 
@@ -112,11 +119,26 @@ namespace VeeamTestAssignmentGzip
         static void PrintUsage(string exeName)
         {
             Console.WriteLine("Usage:\n");
-            Console.WriteLine($"{exeName} compress <input> <output>");
+            Console.WriteLine($"{exeName} compress <input> <output> /BlockSize <block> /MaxThreads <threads>");
             Console.WriteLine($"{exeName} decompress <input> <output>");
             Console.WriteLine("");
+            Console.WriteLine("");
             Console.WriteLine("    <input>\tPath to an input file.");
+            Console.WriteLine("");
             Console.WriteLine("    <output>\tPath to an output file.");
+            Console.WriteLine("");
+            Console.WriteLine("    <block>\tSize of block (in bytes) for compressing.");
+            Console.WriteLine("           \tIt must not exceed 4294967296 (4 GiB).");
+            Console.WriteLine("           \tIt will be stored alongside compressed stream, you shouldn't remember it");
+            Console.WriteLine("           \tnor to specify on decompressing.");
+            Console.WriteLine("           \tNOTE: meaningless & ignored on decompressing (will be taken from the archive).");
+            Console.WriteLine("");
+            Console.WriteLine("    <threads>\tMaximum number of threads used on compressing.");
+            Console.WriteLine("             \tIf not set, will be chosen by number of logical cores of your machine.");
+            Console.WriteLine("             \t(For this machine it is " + WorkDistributor.GetDefaultNumberOfThreads() + ".)");
+            Console.WriteLine("             \tNote: if number of blocks is less than this value, number of threads");
+            Console.WriteLine("             \twill be the same as the number of blocks.");
+            Console.WriteLine("             \tNOTE: meaningless & ignored on decompressing (decompression is single-threaded).");
         }
     }
 }
