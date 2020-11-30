@@ -128,7 +128,7 @@ namespace VeeamTestAssignmentGzip
             Console.WriteLine("    <output>\tPath to an output file.");
             Console.WriteLine("");
             Console.WriteLine("    <block>\tSize of block (in bytes) for compressing.");
-            Console.WriteLine("           \tIt must not exceed 4294967296 (4 GiB).");
+            Console.WriteLine("           \tIt must not exceed 2147483647 (2 GiB).");
             Console.WriteLine("           \tIt will be stored alongside compressed stream, you shouldn't remember it");
             Console.WriteLine("           \tnor to specify on decompressing.");
             Console.WriteLine("           \tNOTE: meaningless & ignored on decompressing (will be taken from the archive).");
