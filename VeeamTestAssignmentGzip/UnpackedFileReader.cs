@@ -3,22 +3,14 @@ using System.IO;
 
 namespace VeeamTestAssignmentGzip
 {
-    public class UnpackedFileReader : IDisposable
+    public class UnpackedFileReader : FileReader
     {
-        private bool _disposed = false;
-
-        private FileStream stream;
         private readonly int blockSize;
 
         public UnpackedFileReader(string fileName, int blockSize)
+            : base(fileName)
         {
-            this.stream = File.OpenRead(fileName);
             this.blockSize = blockSize;
-        }
-
-        public bool IsNextBlockAvailable()
-        {
-            return (this.stream.Position < this.stream.Length);
         }
 
         public void SeekToBlock(long blockNum)
@@ -39,23 +31,6 @@ namespace VeeamTestAssignmentGzip
             {
                 return chunk;
             }
-        }
-
-        public void Dispose() => Dispose(true);
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                this.stream?.Dispose();
-            }
-
-            _disposed = true;
         }
     }
 }

@@ -3,21 +3,11 @@ using System.IO;
 
 namespace VeeamTestAssignmentGzip
 {
-    public class PackedDeserializer : IDisposable
+    public class PackedDeserializer : FileReader
     {
-        private bool _disposed = false;
-
-        private FileStream stream;
-
         public PackedDeserializer(string fileName)
-        {
-            this.stream = File.OpenRead(fileName);
-        }
-
-        public bool IsNextBlockAvailable()
-        {
-            return (this.stream.Position < this.stream.Length);
-        }
+            : base(fileName)
+        { }
 
         public byte[] ReadNextPackedChunk(out int origLen)
         {
@@ -30,23 +20,6 @@ namespace VeeamTestAssignmentGzip
             this.stream.Read(chunk, 0, chunkSize);
 
             return chunk;
-        }
-
-        public void Dispose() => Dispose(true);
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                this.stream?.Dispose();
-            }
-
-            _disposed = true;
         }
     }
 }

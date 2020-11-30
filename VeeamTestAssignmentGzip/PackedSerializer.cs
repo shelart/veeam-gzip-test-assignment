@@ -3,13 +3,12 @@ using System.IO;
 
 namespace VeeamTestAssignmentGzip
 {
-    public class PackedSerializer : IDisposable
+    public class PackedSerializer : FileWrapper
     {
         private bool _disposed = false;
 
-        private FileStream stream;
-
         public PackedSerializer(string fileName)
+            : base(fileName)
         {
             this.stream = File.Create(fileName);
         }
@@ -24,9 +23,7 @@ namespace VeeamTestAssignmentGzip
             this.stream.Write(gzippedChunk, 0, packedLen);
         }
 
-        public void Dispose() => Dispose(true);
-
-        protected virtual void Dispose(bool disposing)
+        override protected void Dispose(bool disposing)
         {
             if (_disposed)
             {
@@ -36,8 +33,9 @@ namespace VeeamTestAssignmentGzip
             if (disposing)
             {
                 this.stream?.Flush();
-                this.stream?.Dispose();
             }
+
+            base.Dispose(disposing);
 
             _disposed = true;
         }
