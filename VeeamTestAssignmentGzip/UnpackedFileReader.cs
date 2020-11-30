@@ -8,10 +8,12 @@ namespace VeeamTestAssignmentGzip
         private bool _disposed = false;
 
         private FileStream stream;
+        private readonly int blockSize;
 
-        public UnpackedFileReader(string fileName)
+        public UnpackedFileReader(string fileName, int blockSize)
         {
             this.stream = File.OpenRead(fileName);
+            this.blockSize = blockSize;
         }
 
         public bool IsNextBlockAvailable()
@@ -19,12 +21,12 @@ namespace VeeamTestAssignmentGzip
             return (this.stream.Position < this.stream.Length);
         }
 
-        public void SeekToBlock(long blockNum, int blockSize)
+        public void SeekToBlock(long blockNum)
         {
             this.stream.Seek(blockNum * blockSize, SeekOrigin.Begin);
         }
 
-        public byte[] ReadNextBlock(int blockSize)
+        public byte[] ReadNextBlock()
         {
             byte[] chunk = new byte[blockSize];
             int chunkSize = this.stream.Read(chunk, 0, blockSize);

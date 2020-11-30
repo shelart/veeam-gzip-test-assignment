@@ -13,7 +13,6 @@ namespace VeeamTestAssignmentGzip
         public AutoResetEvent WaitHandlerTowardsMainThread { get; private set; }
         private UnpackedFileReader fileReader;
         private List<long> listOfBlocks;
-        private readonly int blockSize;
         public byte[] GzippedChunk { get; private set; }
         public int OrigChunkLength { get; private set; }
 
@@ -21,17 +20,16 @@ namespace VeeamTestAssignmentGzip
         {
             this.WaitHandlerFromMainThread = new AutoResetEvent(true);
             this.WaitHandlerTowardsMainThread = new AutoResetEvent(false);
-            this.fileReader = new UnpackedFileReader(origFileName);
+            this.fileReader = new UnpackedFileReader(origFileName, blockSize);
             this.listOfBlocks = listOfBlocks;
-            this.blockSize = blockSize;
         }
 
         public void Run()
         {
             foreach (long blockNum in this.listOfBlocks)
             {
-                this.fileReader.SeekToBlock(blockNum, this.blockSize);
-                byte[] origChunk = fileReader.ReadNextBlock(this.blockSize);
+                this.fileReader.SeekToBlock(blockNum);
+                byte[] origChunk = fileReader.ReadNextBlock();
                 this.OrigChunkLength = origChunk.Length;
                 this.GzippedChunk = GzipWrapper.CompressBlock(origChunk);
 

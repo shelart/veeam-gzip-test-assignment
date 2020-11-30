@@ -13,7 +13,7 @@ namespace VeeamTestAssignmentGzip
             for (int i = 0; i < result.Length; ++i)
             {
                 result[i] = new List<long>();
-                for (int j = i; j < amountOfBlocks; j += numOfThreads)
+                for (long j = i; j < amountOfBlocks; j += numOfThreads)
                 {
                     result[i].Add(j);
                 }
