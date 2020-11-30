@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 
@@ -24,6 +25,18 @@ namespace VeeamTestAssignmentGzip
             {
                 case "compress":
                     {
+                        FileInfo fileInfo = new FileInfo(origFileName);
+                        long amountOfBlocks = fileInfo.Length.DivideRoundUp(BLOCK_SIZE);
+                        int numOfThreads = WorkDistributor.GetDefaultNumberOfThreads();
+                        List<long>[] distributedBlocksByThreads = WorkDistributor.DistributeWork(amountOfBlocks, numOfThreads);
+
+                        Console.WriteLine($"Blocks amount: {amountOfBlocks}");
+                        Console.WriteLine("Distributed by threads:");
+                        for (int i = 0; i < distributedBlocksByThreads.Length; ++i)
+                        {
+                            Console.WriteLine($"Thread {i}: " + string.Join(", ", distributedBlocksByThreads[i].ToArray()));
+                        }
+
                         using (UnpackedFileReader fileReader = new UnpackedFileReader(origFileName))
                         using (PackedSerializer fileWriter = new PackedSerializer(resFileName))
                         {
