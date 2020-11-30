@@ -1,6 +1,6 @@
 # GZip Test Assignment (Veeam)
 
-The FSD is [here](TECH TASK (CS) Compression english version.pdf).
+The FSD is [here](TECH_TASK_CS_Compression_english_version.pdf).
 
 ## Format of archive
 
